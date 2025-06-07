@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Job Tracker</title>
+</head>
+<body>
+    <h1>Smart Job Tracker</h1>
+    <form method="POST">
+        <input type="text" name="keyword" placeholder="Job title" required>
+        <input type="text" name="location" placeholder="Location" required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if jobs %}
+        <h2>Results</h2>
+        <table border="1">
+            <tr><th>Title</th><th>Company</th><th>Location</th><th>Date</th></tr>
+            {% for job in jobs %}
+                <tr>
+                    <td>{{ job.title }}</td>
+                    <td>{{ job.company }}</td>
+                    <td>{{ job.location }}</td>
+                    <td>{{ job.date }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body>
+</html>
