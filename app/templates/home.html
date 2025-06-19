@@ -1,8 +1,73 @@
 <!DOCTYPE html>
 <html>
-<head><title>Job Search App</title></head>
-<body>
-    <h1>Welcome to Job Search App</h1>
-    <a href="/search">Go to Search Page</a>
+<head>
+    <title>Job Search App</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(90deg, #e3f2fd 0%, #fff 100%);
+            border-radius: 1rem;
+            padding: 3rem 2rem;
+            margin-top: 3rem;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="hero-section text-center mb-5">
+            <h1 class="display-4 text-primary mb-3">Welcome to Smart Job Tracker</h1>
+            <p class="lead mb-4">Your one-stop solution to search, track, and manage job opportunities from top job portals in India.</p>
+            <a href="/search" class="btn btn-lg btn-primary px-4">Start Searching Jobs</a>
+        </div>
+        <div class="row text-center mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h5 class="card-title">Unified Search</h5>
+                        <p class="card-text">Search jobs from Naukri, LinkedIn, and Infopark with a single click.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-table"></i>
+                        </div>
+                        <h5 class="card-title">Flexible Views</h5>
+                        <p class="card-text">Switch between table and list views for a comfortable browsing experience.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-database-check"></i>
+                        </div>
+                        <h5 class="card-title">Smart Tracking</h5>
+                        <p class="card-text">Save and track jobs you are interested in, all in one place.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-secondary">
+            <p>Made with <span style="color:#e25555;">&#10084;</span> for job seekers.<br>
+            <small>&copy; {{ year or 2025 }} Smart Job Tracker</small></p>
+        </div>
+    </div>
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <!-- Bootstrap JS Bundle CDN (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

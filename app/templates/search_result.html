@@ -2,112 +2,139 @@
 <html>
 <head>
     <title>Job Listings</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-        th { background-color: #f2f2f2; text-align: left; }
         .format-select { margin: 15px 0; }
         .hidden { display: none; }
+        .job-list li { margin-bottom: 1.5rem; }
+        .job-card { border: 1px solid #dee2e6; border-radius: 0.5rem; padding: 1rem; background: #f8f9fa; }
+        .job-card strong { font-size: 1.1rem; }
+        .table thead th { background-color: #f2f2f2; }
     </style>
 </head>
-<body>
-    <h1>Smart Job Tracker</h1>
-    <form id="searchForm" method="POST">
-        <input type="text" name="keyword" placeholder="Job title" required value="{{ request.form.keyword }}">
-        <div class="website-select" style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-            <span>Websites:</span>
-            <label style="margin-bottom: 0;">
-                <input type="checkbox" name="websites" value="naukri"
-                    {% if 'naukri' in request.form.getlist('websites') or not request.form.getlist('websites') %}checked{% endif %}>
-                Naukri.com
-            </label>
-            <label style="margin-bottom: 0;">
-                <input type="checkbox" name="websites" value="linkedin"
-                    {% if 'linkedin' in request.form.getlist('websites') or not request.form.getlist('websites') %}checked{% endif %}>
-                LinkedIn.com
-            </label>
-        </div>
-        <div class="button" style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-            <button type="submit">Search</button>
-        </div>
-        <br>
-        <div class="format-select" style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-            <span>View Options:</span>
-            <label style="margin-bottom: 0;">
-                <input type="radio" name="format" value="table" {% if request.form.format != 'list' %}checked{% endif %} onclick="toggleFormat('table')">
-                Table
-            </label>
-            <label style="margin-bottom: 0;">
-                <input type="radio" name="format" value="list" {% if request.form.format == 'list' %}checked{% endif %} onclick="toggleFormat('list')">
-                List
-            </label>
-        </div>
-    </form>
-    {% if search_flag %}
-        {% if total_results %}
-            <p>{{ total_results }} results obtained:
-                {% if data_summary.naukri %}{{ data_summary.naukri }} from naukri.com{% endif %}
-                {% if data_summary.linkedin %}{% if data_summary.naukri %}, {% endif %}{{ data_summary.linkedin }} from linkedin.com{% endif %}
-            </p>
-        {% else %}
-            <p>No results found.</p>
+<body class="bg-light">
+    <div class="container py-4">
+        <h1 class="mb-4 text-primary">Job Search</h1>
+        <form id="searchForm" method="POST" class="card card-body mb-4 shadow-sm">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                    <input type="text" name="keyword" class="form-control" placeholder="Job title" required value="{{ request.form.keyword }}">
+                </div>
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <span class="fw-semibold">Websites:</span>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="websites" value="naukri"
+                                {% if 'naukri' in request.form.getlist('websites') or not request.form.getlist('websites') %}checked{% endif %} id="naukriCheck">
+                            <label class="form-check-label" for="naukriCheck">Naukri.com</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="websites" value="linkedin"
+                                {% if 'linkedin' in request.form.getlist('websites') or not request.form.getlist('websites') %}checked{% endif %} id="linkedinCheck">
+                            <label class="form-check-label" for="linkedinCheck">LinkedIn.com</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="websites" value="infopark"
+                                {% if 'infopark' in request.form.getlist('websites') or not request.form.getlist('websites') %}checked{% endif %} id="infoparkCheck">
+                            <label class="form-check-label" for="infoparkCheck">Infopark.in</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 mt-3">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <div class="format-select d-flex align-items-center gap-2 ms-3">
+                    <span class="fw-semibold">View Options:</span>
+                    <div class="form-check form-check-inline mb-0">
+                        <input class="form-check-input" type="radio" name="format" value="table" id="tableRadio"
+                            {% if request.form.format != 'list' %}checked{% endif %} onclick="toggleFormat('table')">
+                        <label class="form-check-label" for="tableRadio">Table</label>
+                    </div>
+                    <div class="form-check form-check-inline mb-0">
+                        <input class="form-check-input" type="radio" name="format" value="list" id="listRadio"
+                            {% if request.form.format == 'list' %}checked{% endif %} onclick="toggleFormat('list')">
+                        <label class="form-check-label" for="listRadio">List</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+        {% if search_flag %}
+            {% if total_results %}
+                <div class="alert alert-success">
+                    {{ total_results }} results obtained:
+                    {%- set sources = [] -%}
+                    {%- if data_summary.naukri %}{% set _ = sources.append(data_summary.naukri ~ ' from naukri.com') %}{% endif -%}
+                    {%- if data_summary.linkedin %}{% set _ = sources.append(data_summary.linkedin ~ ' from linkedin.com') %}{% endif -%}
+                    {%- if data_summary.infopark %}{% set _ = sources.append(data_summary.infopark ~ ' from infopark.in') %}{% endif -%}
+                    {{ sources|join(', ') }}.
+                </div>
+            {% else %}
+                <div class="alert alert-warning">No results found.</div>
+            {% endif %}
         {% endif %}
-    {% endif %}
-    {% if no_websites_flag%}
-        <p>Please select at least one website to search.</p>
-    {% endif %}
-    
-    {% if jobs %}
-        <div id="listFormat" class="{% if request.form.format != 'list' %}hidden{% endif %}">
-            <ul>
-            {% for job in jobs %}
-                <li>
-                    <strong>{{ job.title }}</strong><br>
-                    <b>Company:</b> {{ job.company }}<br>
-                    <b>Location:</b> {{ job.location }}<br>
-                    <b>Description:</b> {{ job.description }}<br>
-                    <b>Posted:</b> {{ job.posted_on }}<br>
-                    <b>Experience:</b> {{ job.experience }}<br>
-                    <b>Salary:</b> {{ job.salary }}<br>
-                    <b>Source:</b> {{ job.site }}<br>
-                    <b>URL:</b> <a href="{{ job.url }}" target="_blank">View Job</a>
-                </li>
-            {% endfor %}
-            </ul>
-        </div>
-        <div id="tableFormat" class="{% if request.form.format == 'list' %}hidden{% endif %}">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Company</th>
-                        <th>Location</th>
-                        <th>Description</th>
-                        <th>Posted</th>
-                        <th>Experience</th>
-                        <th>Salary</th>
-                        <th>Source</th>
-                        <th>URL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for job in jobs %}
-                    <tr>
-                        <td>{{ job.title }}</td>
-                        <td>{{ job.company }}</td>
-                        <td>{{ job.location }}</td>
-                        <td>{{ job.description }}</td>
-                        <td>{{ job.posted_on }}</td>
-                        <td>{{ job.experience }}</td>
-                        <td>{{ job.salary }}</td>
-                        <td>{{ job.site }}</td>
-                        <td><a href="{{ job.url }}" target="_blank">Link</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
+        {% if no_websites_flag %}
+            <div class="alert alert-danger">Please select at least one website to search.</div>
+        {% endif %}
+
+        {% if jobs %}
+            <div id="listFormat" class="job-list {% if request.form.format != 'list' %}hidden{% endif %}">
+                <ul class="list-unstyled">
+                {% for job in jobs %}
+                    <li>
+                        <div class="job-card shadow-sm mb-3">
+                            <strong>{{ job.title }}</strong><br>
+                            <span class="text-secondary"><b>Company:</b> {{ job.company }}</span><br>
+                            <span><b>Location:</b> {{ job.location }}</span><br>
+                            <span><b>Description:</b> {{ job.description }}</span><br>
+                            <span><b>Posted:</b> {{ job.posted_on }}</span><br>
+                            <span><b>Experience:</b> {{ job.experience }}</span><br>
+                            <span><b>Salary:</b> {{ job.salary }}</span><br>
+                            <span><b>Source:</b> {{ job.site }}</span><br>
+                            <span><b>URL:</b> <a href="{{ job.url }}" target="_blank" class="link-primary">View Job</a></span>
+                        </div>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+            <div id="tableFormat" class="{% if request.form.format == 'list' %}hidden{% endif %}">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle bg-white shadow-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Company</th>
+                                <th>Location</th>
+                                <th>Description</th>
+                                <th>Posted</th>
+                                <th>Experience</th>
+                                <th>Salary</th>
+                                <th>Source</th>
+                                <th>URL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job in jobs %}
+                            <tr>
+                                <td>{{ job.title }}</td>
+                                <td>{{ job.company }}</td>
+                                <td>{{ job.location }}</td>
+                                <td>{{ job.description }}</td>
+                                <td>{{ job.posted_on }}</td>
+                                <td>{{ job.experience }}</td>
+                                <td>{{ job.salary }}</td>
+                                <td>{{ job.site }}</td>
+                                <td><a href="{{ job.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Link</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <!-- Bootstrap JS Bundle CDN (for responsive features, optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function toggleFormat(format) {
             document.getElementById('listFormat').classList.toggle('hidden', format !== 'list');

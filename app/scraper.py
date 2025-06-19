@@ -1,7 +1,7 @@
 import requests
 import random
 import string
-from .utils import get_proxy, get_headers_url, get_params
+from .utils import get_proxy, get_headers_url, get_params, insert_jobs
 import re
 from lxml.html import fromstring
 
@@ -15,22 +15,27 @@ def get_search_results(keyword, websites):
         params = get_params(site, keyword)
         proxy = get_proxy()
         cookies = None
+        verify = True
         if site == 'linkedin':
             # Generate a random string for 'bcookie'
             bcookie_value = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
             cookies = {'bcookie': bcookie_value}
+        if site == 'infopark':
+            verify = False
         response = requests.get(
             url,
             params=params,
             headers=headers,
             proxies=proxy,
-            cookies=cookies
+            cookies=cookies,
+            verify=verify
         )
         job_data = get_results(response, site)
         data_summary[site] = len(job_data)
         print(f'Request sent to {site} | status code: {response.status_code} | jobs found: {len(job_data)}')
         if job_data:
             data.extend(job_data)
+    insert_jobs(data, keyword)
     return data, data_summary
     
 
@@ -60,6 +65,61 @@ def get_results(response, site):
         return parse_naukri(response)
     elif site.lower() == 'linkedin':
         return parse_linkedin(response)
+    elif site.lower() == 'infopark':
+        return parse_infopark(response)
+    
+def parse_infopark(response):
+    parser = fromstring(response.text)
+    jobs = parser.xpath('//table[@class="table"]/tbody//tr')
+    job_data = []
+    for job in jobs:
+        title = job.xpath('./td[@class="head"]/text()')
+        title = title[0].strip() if title else ''
+        if 'no jobs' in title.lower():
+            print('No jobs found on Infopark')
+            return []
+        company = job.xpath('./td[@class="date"]/text()')
+        company = company[0].strip() if company else ''
+        last_date = job.xpath('./td[3]/text()')
+        last_date = last_date[0].strip() if last_date else ''
+        url_list = job.xpath('./td[@class="btn-sec"]/a/@href')
+        url = url_list[0].strip() if url_list else ''
+        if url:
+            print(f'sending details request to {url}')
+            headers, main_url = get_headers_url('infopark')
+            details_response = requests.get(
+                url,
+                headers=headers,
+                proxies=get_proxy(),
+                verify=False  # Infopark uses self-signed SSL certificates
+            )
+            details_parser = fromstring(details_response.text)
+            details1_xpath = '//div[@class="deatil-box"]/text()'
+            details2_xpath = '//div[@class="deatil-box"]/div[@class="contact"]//text()'
+            details1 = get_single_string(details_parser.xpath(details1_xpath))
+            details2 = get_single_string(details_parser.xpath(details2_xpath))
+            details = details1 + '\n' + details2 + '\nLast date to apply: ' + last_date
+            details = remove_html_tags(details)
+        jdata = {
+            'title': title,
+            'company': company,
+            'location': '',  # Infopark search page doesn't provide location,
+            'posted_on': '',
+            'url': url,
+            'site': 'infopark',
+            'description': details,  # Infopark search page doesn't provide description
+            'experience': '',   # Not available directly
+            'salary': '',       # Not available directly
+        }
+        job_data.append(jdata)
+    return job_data
+
+
+def get_single_string(lst):
+    """
+    Joins a list of strings into a single string, removing any leading or trailing whitespace.
+    """
+    return ' '.join([s.strip() for s in lst if s and s.strip()])
 
 def parse_naukri(response):
     try:
