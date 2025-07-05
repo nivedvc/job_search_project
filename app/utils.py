@@ -198,6 +198,114 @@ def insert_jobs(job_list, input_keyword):
     print(f"Inserted {len(job_list)} jobs into the database with keyword {input_keyword}")
 
 
+def get_jobs(input_keyword=None, source=None, location=None):
+    """
+    Fetches jobs from the SQLite database.
+    If input_keyword is provided, filters by that keyword.
+    If source is provided, filters by that source.
+    Returns a list of job dictionaries, sorted by posted_on (recent first).
+    Adds a 'full_description' field and a 'days_ago' field for each job.
+    """
+    conn = sqlite3.connect('jobs.db')
+    cursor = conn.cursor()
+    query = "SELECT * FROM jobs"
+    conditions = []
+    params = []
+    if input_keyword:
+        conditions.append("input_keyword LIKE ?")
+        params.append(f"%{input_keyword}%")
+    if source:
+        conditions.append("source = ?")
+        params.append(source)
+    if location:
+        conditions.append("location = ?")
+        params.append(location)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    # Order by posted_on date (converted to YYYY-MM-DD for sorting), descending (recent first)
+    query += " ORDER BY substr(posted_on, 7, 4) || '-' || substr(posted_on, 4, 2) || '-' || substr(posted_on, 1, 2) DESC"
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    
+    jobs = []
+    for row in rows:
+        full_description = row[4] or ""
+        short_description = (full_description[:50] + '...') if len(full_description) > 50 else full_description
+        days_ago = get_days_ago(row[5])
+        job = {
+            'id': row[0],
+            'title': row[1],
+            'company': row[2],
+            'location': row[3],
+            'description': short_description,
+            'full_description': full_description,
+            'posted_on': days_ago,
+            'experience': row[6],
+            'salary': row[7],
+            'source': row[8],
+            'url': row[9],
+            'input_keyword': row[10]
+        }
+        jobs.append(job)
+
+    conn.close()
+    return jobs
+
+def get_latest_10_jobs():
+    """
+    Fetches the latest 10 jobs from the SQLite database.
+    Returns a list of job dictionaries, sorted by posted_on (recent first).
+    Adds a 'full_description' field and a 'days_ago' field for each job.
+    """
+    conn = sqlite3.connect('jobs.db')
+    cursor = conn.cursor()
+    query = "SELECT * FROM jobs ORDER BY substr(posted_on, 7, 4) || '-' || substr(posted_on, 4, 2) || '-' || substr(posted_on, 1, 2) DESC LIMIT 10"
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    
+    jobs = []
+    for row in rows:
+        full_description = row[4] or ""
+        short_description = (full_description[:50] + '...') if len(full_description) > 50 else full_description
+        days_ago = get_days_ago(row[5])
+        job = {
+            'id': row[0],
+            'title': row[1],
+            'company': row[2],
+            'location': row[3],
+            'description': short_description,
+            'full_description': full_description,
+            'posted_on': days_ago,
+            'experience': row[6],
+            'salary': row[7],
+            'source': row[8],
+            'url': row[9],
+            'input_keyword': row[10]
+        }
+        jobs.append(job)
+
+    conn.close()
+    return jobs
+
+def get_days_ago(posted_on):
+    """
+    Converts a posted_on date string (DD-MM-YYYY) to 'X days ago' format.
+    """
+    try:
+        posted_date = datetime.strptime(posted_on, "%d-%m-%Y")
+        now = datetime.now()
+        delta = (now - posted_date).days
+        if delta == 0:
+            return "Today"
+        elif delta == 1:
+            return "1 day ago"
+        else:
+            return f"{delta} days ago"
+    except Exception:
+        return posted_on
+
 def convert_posted_text(posted_text):
     """
     Converts relative posted text like '1 week ago', '2 days ago', '3 hours ago', etc.

@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request
 from .scraper import get_search_results
+from .utils import get_jobs, get_latest_10_jobs
 
 main = Blueprint('main', __name__)
 
@@ -36,3 +37,14 @@ def search():
         no_websites_flag=no_websites_flag,
         keyword=keyword,
     )
+
+@main.route('/database', methods=['GET'])
+def database():
+    job_title = request.args.get('job_title', None)
+    location = request.args.get('location', None)
+    source = request.args.get('source', None)
+    if job_title or location or source:
+        jobs = get_jobs(input_keyword=job_title, source=source, location=location)
+    else:
+        jobs = get_latest_10_jobs()
+    return render_template('database.html', jobs=jobs, request=request)

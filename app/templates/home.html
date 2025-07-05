@@ -16,14 +16,46 @@
             font-size: 2rem;
             color: #0d6efd;
         }
+        .action-buttons {
+            margin-top: 2rem;
+        }
     </style>
 </head>
 <body class="bg-light">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">Smart Job Tracker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">Live Search</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/database">Data Base</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     <div class="container py-5">
         <div class="hero-section text-center mb-5">
             <h1 class="display-4 text-primary mb-3">Welcome to Smart Job Tracker</h1>
-            <p class="lead mb-4">Your one-stop solution to search, track, and manage job opportunities from top job portals in India.</p>
-            <a href="/search" class="btn btn-lg btn-primary px-4">Start Searching Jobs</a>
+            <p class="lead mb-4">
+                Your one-stop solution to search, track, and manage job opportunities from top job portals in India.<br>
+                Start a <b>Live Search</b> to get the latest jobs, or explore our <b>Data Base</b> for previously saved listings.
+            </p>
+            <div class="action-buttons d-flex justify-content-center gap-3">
+                <a href="/search" class="btn btn-primary btn-lg">Live Search</a>
+                <a href="/database" class="btn btn-outline-primary btn-lg">Data Base Search</a>
+            </div>
         </div>
         <div class="row text-center mb-5">
             <div class="col-md-4 mb-4">
